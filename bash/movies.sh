@@ -4,12 +4,14 @@ export HandBrakeCLI=~/Documents/scripts/HandBrakeCLI/HandBrakeCLI
 decrypt_and_backup(){  # make a full decrypted disc backup
   mountedDiscNumber=${1:-NONO}
   newMovieFolder=${2:-NONO}
-  if [ "$newMovieFolder" = "NONO" -o "$mountedDiscFolder" = "NONO" ]
+  if [ "$newMovieFolder" = "NONO" -o "$mountedDiscNumber" = "NONO" ]
   then
+    echo "List all available drives" ; echo
+    ${makemkvcon}  -r --cache=1 info disc:9999
+    echo
     echo "decrypt_and_backup <mountedDiscNumber> <newMovieFolder>"
-    echo "decrypt_and_backup 2 ~/Movies/MovieName"
+    echo "decrypt_and_backup 2 ~/Movies/MovieName"; echo
   else
-    echo "should not see this"
     ${makemkvcon} --decrypt backup disc:${mountedDiscNumber} ${newMovieFolder}
   fi
 }
@@ -18,10 +20,17 @@ print_info(){
   MovieFolder=${1:-NONO}
   if [ "$MovieFolder" = "NONO" ]
   then
-    echo "print_info <MovieFolder>"
-    echo "print_info  ~/Movies/MovieName"
+    echo; echo "print_info <MovieFolder>"
+    echo "print_info  ~/Movies/MovieName"; echo
   else
-    ${makemkvcon}  -r --cache=1 info file:${MovieFolder}
+    TMPFILE=$(mktemp -q /tmp/print_info.XXXXXX)
+    if [ $? -ne 0 ]; then
+           echo "$0: Can't create temp file, exiting..."
+           #exit 1
+    fi
+    ${makemkvcon}  -r --cache=1 info file:${MovieFolder} > ${TMPFILE}
+    grep apter ${TMPFILE}
+    echo; echo "full info can be found here: $TMPFILE"
   fi
 }
 
